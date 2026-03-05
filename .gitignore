@@ -205,3 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Hardware Simulation & Waveforms
+*.vcd
+*.wlf
+*.fst
+*.vpd
+*.out
+
+# Simulator specific (ModelSim, Vivado, Verilator etc.)
+work/
+*.log
+*.jou
+*.pb
