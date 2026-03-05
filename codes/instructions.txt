@@ -1,0 +1,148 @@
+start:
+    addi x0, x0, 0
+    addi x0, x0, 0
+    lui t0, 0x12345
+    addi t0, t0, 1656
+    addi t1, x0, 10
+    addi t2, x0, -1
+    addi t3, t2, 16
+    addi t4, t1, -5
+    sltiu t5, t1, -1
+    slti t6, t1, -1
+    slli t6, t1, 4
+    srli t5, t1, 2
+    srai t6, t2, 2
+    xori t5, t1, 20
+    andi t5, t1, 20
+    ori t6, t1, 20
+    add t6, t1, t3
+    sub t6, t1, t2
+    sll t6, t1, t4
+    srl t6, t1, t4
+    sra t6, t2, t4
+    slt t5, t2, t1
+    sltu t6, t2, t1
+    and t6, t0, t2
+    or t5, t1, t3
+    xor t6, t1, t3
+    auipc sp, 0x0
+    addi sp, sp, 40
+    lui t0, 0xdeadb
+    addi t0, t0, -273
+    sb t0, 0(sp)
+    sh t0, 4(sp)
+    sw t0, 8(sp)
+    lw t1, 8(sp)
+    lh t2, 4(sp)
+    lhu t3, 4(sp)
+    lb t4, 0(sp)
+    lbu t5, 0(sp)
+    lw t1, 8(sp)
+    addi t0, t1, -6
+    addi t6, x0, 0
+    jal x0, test_beq
+
+test_beq:
+    addi t0, x0, 10
+    addi t1, x0, 10
+    beq t0, t1, beq_taken_ok
+    jal x0, fail_handler
+
+beq_taken_ok:
+    addi t1, x0, 20
+    beq t0, t1, fail_handler
+    jal x0, test_bne
+
+test_bne:
+    addi t0, x0, 10
+    addi t1, x0, 20
+    bne t0, t1, bne_taken_ok
+    jal x0, fail_handler
+
+bne_taken_ok:
+    addi t1, x0, 10
+    bne t0, t1, fail_handler
+    jal x0, test_blt
+
+test_blt:
+    addi t0, x0, 10
+    addi t1, x0, 20
+    blt t0, t1, blt_taken_ok_1
+    jal x0, fail_handler
+
+blt_taken_ok_1:
+    addi t0, x0, -10
+    addi t1, x0, 10
+    blt t0, t1, blt_taken_ok_2
+    jal x0, fail_handler
+
+blt_taken_ok_2:
+    addi t0, x0, 20
+    addi t1, x0, 10
+    blt t0, t1, fail_handler
+    jal x0, test_bge
+
+test_bge:
+    addi t0, x0, 20
+    addi t1, x0, 10
+    bge t0, t1, bge_taken_ok_1
+    jal x0, fail_handler
+
+bge_taken_ok_1:
+    addi t0, x0, 10
+    addi t1, x0, 10
+    bge t0, t1, bge_taken_ok_2
+    jal x0, fail_handler
+
+bge_taken_ok_2:
+    addi t0, x0, -10
+    addi t1, x0, 10
+    bge t0, t1, fail_handler
+    jal x0, test_bltu
+
+test_bltu:
+    addi t0, x0, 10
+    addi t1, x0, 20
+    bltu t0, t1, bltu_taken_ok
+    jal x0, fail_handler
+
+bltu_taken_ok:
+    addi t0, x0, -1
+    addi t1, x0, 10
+    bltu t0, t1, fail_handler
+    jal x0, test_bgeu
+
+test_bgeu:
+    addi t0, x0, -1
+    addi t1, x0, 10
+    bgeu t0, t1, bgeu_taken_ok
+    jal x0, fail_handler
+
+bgeu_taken_ok:
+    addi t0, x0, 10
+    addi t1, x0, 20
+    bgeu t0, t1, fail_handler
+    jal x0, test_jal
+
+test_jal:
+    jal ra, jal_target
+    jal x0, pass_handler
+
+jal_target:
+    jal x0, test_jalr
+
+test_jalr:
+    jalr t3, 0(ra)
+
+jalr_return_ok:
+    jal x0, fail_handler
+
+pass_handler:
+    addi t6, x0, 1
+pass_loop:
+    jal x0, pass_loop
+
+fail_handler:
+    addi t6, x0, -1
+fail_loop:
+    jal x0, fail_loop

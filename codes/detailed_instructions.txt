@@ -1,0 +1,150 @@
+# RISC-V Assembly                 Description                                             Address  Machine Code
+#==============================================================================================================
+start:
+# --- Initial Operations ---
+  addi x0, x0, 0                    # nop (No Operation)                                   0x000     00000013
+  addi x0, x0, 0                    # nop (No Operation)                                   0x004     00000013
+  lui t0, 0x12345                   # t0 = 0x12345000                                      0x008     123452b7
+  addi t0, t0, 1656                 # t0 = 0x12345000 + 0x678 = 0x12345678                 0x00C     67828293
+  addi t1, x0, 10                   # t1 = 10                                              0x010     00a00313
+  addi t2, x0, -1                   # t2 = -1 (0xFFFFFFFF)                                 0x014     fff00393
+  addi t3, t2, 16                   # t3 = -1 + 16 = 15                                    0x018     00530e13
+  addi t4, t1, -5                   # t4 = 10 - 5 = 5                                      0x01C     ffb30e93
+
+# --- Test Logical-Arithmetic and Shift Instructions ---
+  sltiu t5, t1, -1                  # t5 = (10 < 0xFFFFFFFF) unsigned -> 1                 0x020     fff33f13
+  slti t6, t1, -1                   # t6 = (10 < -1) signed -> 0                           0x024     fff32f93
+  slli t6, t1, 4                    # t6 = 10 << 4 = 160                                   0x028     00431f93
+  srli t5, t1, 2                    # t5 = 10 >> 2 (logical) = 2                           0x02C     00235f13
+  srai t6, t2, 2                    # t6 = -1 >> 2 (arithmetic) = -1                       0x030     4023df93
+  xori t5, t1, 20                   # t5 = 10 ^ 20 = 30                                    0x034     01434f13
+  andi t5, t1, 20                   # t5 = 10 & 20 = 0                                     0x038     01437f13
+  ori t6, t1, 20                    # t6 = 10 | 20 = 30                                    0x03C     01436f93
+  add t6, t1, t3                    # t6 = 10 + 15 = 25                                    0x040     01c30fb3
+  sub t6, t1, t2                    # t6 = 10 - (-1) = 11                                  0x044     40730fb3
+  sll t6, t1, t4                    # t6 = 10 << 5 = 320                                   0x048     01d31fb3
+  srl t6, t1, t4                    # t6 = 10 >> 5 (logical) = 0                           0x04C     01d35fb3
+  sra t6, t2, t4                    # t6 = -1 >> 5 (arithmetic) = -1                       0x050     41d3dfb3
+  slt t5, t2, t1                    # t5 = (-1 < 10) signed -> 1                           0x054     0063af33
+  sltu t6, t2, t1                   # t6 = (0xFFFFFFFF < 10) unsigned -> 0                 0x058     0063bfb3
+  and t6, t0, t2                    # t6 = 0x12345678 & 0xFFFFFFFF = 0x12345678            0x05C     0072ffb3
+  or t5, t1, t3                     # t5 = 10 | 15 = 15                                    0x060     01c36f33
+  xor t6, t1, t3                    # t6 = 10 ^ 15 = 5                                     0x064     01c34fb3
+
+# --- Memory Test (Store/Load) ---
+  auipc sp, 0x0                     # sp = PC + 0 = 0x68                                   0x068     00000117
+  addi sp, sp, 40                   # sp = 0x68 + 40 = 0x68 + 0x28 = 0x90                  0x06C     02810113
+  lui t0, 0xdeadb                   # t0 = 0xDEADB000                                      0x070     deadb2b7
+  addi t0, t0, -273                 # t0 = 0xDEADB000 - 0x111 = 0xDEADAEEF                 0x074     eef28293
+  sb t0, 0(sp)                      # Store byte 0xEF at address 0x90                      0x078     00510023
+  sh t0, 4(sp)                      # Store half-word 0xAEEF at address 0x94               0x07C     00511223
+  sw t0, 8(sp)                      # Store word 0xDEADAEEF at address 0x98                0x080     00512423
+  lw t1, 8(sp)                      # Load t1 = 0xDEADAEEF from address 0x98               0x084     00812303
+  lh t2, 4(sp)                      # Load t2 = 0xAEEF (sign-ext) = 0xFFFFAEEF from 0x94   0x088     00411383
+  lhu t3, 4(sp)                     # Load t3 = 0xAEEF (zero-ext) = 0x0000AEEF from 0x94   0x08C     00415e03
+  lb t4, 0(sp)                      # Load t4 = 0xEF (sign-ext) = 0xFFFFFFEF from 0x90     0x090     00010e83
+  lbu t5, 0(sp)                     # Load t5 = 0xEF (zero-ext) = 0x000000EF from 0x90     0x094     00014f03
+  lw t1, 8(sp)                      # Reload t1 = 0xDEADAEEF from address 0x98             0x098     00812303
+  addi t0, t1, -6                    # t0 = 0xDEADAEEF - 6 = 0xDEADAEE9                    0x09C     00600293
+  addi t6, x0, 0                    # Zero out t6. t6 = 0                                  0x0A0     00000f93
+  jal x0, test_beq                  # Jump to test_beq                                     0x0A4     0040006f
+
+# --- Test BEQ Instruction (Branch if Equal) ---
+test_beq:
+  addi t0, x0, 10                   # t0 = 10                                              0x0A8     00a00293
+  addi t1, x0, 10                   # t1 = 10                                              0x0AC     00a00313
+  beq t0, t1, beq_taken_ok          # Branch if t0 == t1 (10 == 10) -> Taken               0x0B0     00628463
+  jal x0, fail_handler              # Not executed                                         0x0B4     0e80006f
+beq_taken_ok:
+  addi t1, x0, 20                   # t1 = 20                                              0x0B8     01400313
+  beq t0, t1, fail_handler          # Branch if t0 == t1 (10 == 20) -> Not taken           0x0BC     0e628063
+  jal x0, test_bne                  # Jump to test_bne                                     0x0C0     0040006f
+
+# --- Test BNE Instruction (Branch if Not Equal) ---
+test_bne:
+  addi t0, x0, 10                   # t0 = 10                                              0x0C4     00a00293
+  addi t1, x0, 20                   # t1 = 20                                              0x0C8     01400313
+  bne t0, t1, bne_taken_ok          # Branch if t0 != t1 (10 != 20) -> Taken               0x0CC     00629463
+  jal x0, fail_handler              # Not executed                                         0x0D0     0cc0006f
+bne_taken_ok:
+  addi t1, x0, 10                   # t1 = 10                                              0x0D4     00a00313
+  bne t0, t1, fail_handler          # Branch if t0 != t1 (10 != 10) -> Not taken           0x0D8     0c629263
+  jal x0, test_blt                  # Jump to test_blt                                     0x0DC     0040006f
+
+# --- Test BLT Instruction (Branch if Less Than) ---
+test_blt:
+  addi t0, x0, 10                   # t0 = 10                                              0x0E0     00a00293
+  addi t1, x0, 20                   # t1 = 20                                              0x0E4     01400313
+  blt t0, t1, blt_taken_ok_1        # Branch if t0 < t1 (10 < 20) -> Taken                 0x0E8     0062c463
+  jal x0, fail_handler              # Not executed                                         0x0EC     0b00006f
+blt_taken_ok_1:
+  addi t0, x0, -10                  # t0 = -10                                             0x0F0     ff600293
+  addi t1, x0, 10                   # t1 = 10                                              0x0F4     00a00313
+  blt t0, t1, blt_taken_ok_2        # Branch if t0 < t1 (-10 < 10) -> Taken                0x0F8     0062c463
+  jal x0, fail_handler              # Not executed                                         0x0FC     0a00006f
+blt_taken_ok_2:
+  addi t0, x0, 20                   # t0 = 20                                              0x100     01400293
+  addi t1, x0, 10                   # t1 = 10                                              0x104     00a00313
+  blt t0, t1, fail_handler          # Branch if t0 < t1 (20 < 10) -> Not taken             0x108     0862ca63
+  jal x0, test_bge                  # Jump to test_bge                                     0x10C     0040006f
+
+# --- Test BGE Instruction (Branch if Greater or Equal) ---
+test_bge:
+  addi t0, x0, 20                   # t0 = 20                                              0x110     01400293
+  addi t1, x0, 10                   # t1 = 10                                              0x114     00a00313
+  bge t0, t1, bge_taken_ok_1        # Branch if t0 >= t1 (20 >= 10) -> Taken               0x118     0062d463
+  jal x0, fail_handler              # Not executed                                         0x11C     0800006f
+bge_taken_ok_1:
+  addi t0, x0, 10                   # t0 = 10                                              0x120     00a00293
+  addi t1, x0, 10                   # t1 = 10                                              0x124     00a00313
+  bge t0, t1, bge_taken_ok_2        # Branch if t0 >= t1 (10 >= 10) -> Taken               0x128     0062d463
+  jal x0, fail_handler              # Not executed                                         0x12C     0700006f
+bge_taken_ok_2:
+  addi t0, x0, -10                  # t0 = -10                                             0x130     ff600293
+  addi t1, x0, 10                   # t1 = 10                                              0x134     00a00313
+  bge t0, t1, fail_handler          # Branch if t0 >= t1 (-10 >= 10) -> Not taken          0x138     0662d263
+  jal x0, test_bltu                 # Jump to test_bltu                                    0x13C     0040006f
+
+# --- Test BLTU Instruction (Branch if Less Than Unsigned) ---
+test_bltu:
+  addi t0, x0, 10                   # t0 = 10                                              0x140     00a00293
+  addi t1, x0, 20                   # t1 = 20                                              0x144     01400313
+  bltu t0, t1, bltu_taken_ok        # Branch if t0 < t1 unsigned (10 < 20) -> Taken        0x148     0062e463
+  jal x0, fail_handler              # Not executed                                         0x14C     0500006f
+bltu_taken_ok:
+  addi t0, x0, -1                   # t0 = -1 (0xFFFFFFFF)                                 0x150     fff00293
+  addi t1, x0, 10                   # t1 = 10                                              0x154     00a00313
+  bltu t0, t1, fail_handler         # Branch if t0 < t1 unsigned (large < 10) -> Not taken 0x158     0462e263
+  jal x0, test_bgeu                 # Jump to test_bgeu                                    0x15C     0040006f
+
+# --- Test BGEU Instruction (Branch if Greater or Equal Unsigned) ---
+test_bgeu:
+  addi t0, x0, -1                   # t0 = -1 (0xFFFFFFFF)                                 0x160     fff00293
+  addi t1, x0, 10                   # t1 = 10                                              0x164     00a00313
+  bgeu t0, t1, bgeu_taken_ok        # Branch if t0 >= t1 unsigned (large >= 10) -> Taken   0x168     0062f463
+  jal x0, fail_handler              # Not executed                                         0x16C     0300006f
+bgeu_taken_ok:
+  addi t0, x0, 10                   # t0 = 10                                              0x170     00a00293
+  addi t1, x0, 20                   # t1 = 20                                              0x174     01400313
+  bgeu t0, t1, fail_handler         # Branch if t0 >= t1 unsigned (10 >= 20) -> Not taken  0x178     0262f263
+  jal x0, test_jal                  # Jump to test_jal                                     0x17C     0040006f
+
+# --- Test JAL and JALR ---
+test_jal:
+  jal ra, jal_target                # Jump to jal_target, ra = PC+4 = 0x184                0x180     008000ef
+  jal x0, pass_handler              # Not executed (but it's the jalr destination)         0x184     0100006f
+jal_target:
+  jal x0, test_jalr                 # Jump to test_jalr                                    0x188     0040006f
+test_jalr:
+  jalr t3, 0(ra)                    # Jump to address in ra (0x184), t3 = PC+4 = 0x190     0x18C     00008e67
+  jal x0, fail_handler              # Should not be executed                               0x190     00c0006f
+
+# --- Success/Failure Handlers ---
+pass_handler:
+  addi t6, x0, 1                    # Set t6 = 1 to indicate Success                       0x194     00100f93
+pass_loop:
+  jal x0, pass_loop                 # Infinite loop                                        0x198     0000006f
+fail_handler:
+  addi t6, x0, -1                   # Set t6 = -1 to indicate failure                      0x19C     fff00f93
+fail_loop:
+  jal x0, fail_loop                 # Infinite loop                                        0x1A0     0000006f
