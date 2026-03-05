@@ -2,7 +2,7 @@
 
 SystemVerilog implementation of a 32-bit RISC-V processor (RV32I base integer instruction set) featuring a classic 5-stage pipeline. 
 
-This project was developed as part of the Digital Electronics course at Tongji University (Shanghai, China) during a Double Degree exchange program.
+This project was developed as part of the Digital Electronics course at Tongji University (Shanghai, China) during a Double Degree exchange program. The project was completed in Spring Semester 2024-2025
 
 ## Architecture Overview
 The core follows a standard 5-stage pipeline design: Instruction Fetch (IF), Decode (ID), Execute (EX), Memory (MEM), and Write-Back (WB). 
